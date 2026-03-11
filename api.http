@@ -13,38 +13,91 @@ GET {{baseUrl}}/health
 ### Ingestão de Documentos
 ### ============================================
 
-### Ingerir documento
+### Ingerir documento RH
 POST {{baseUrl}}/documents
 Content-Type: application/json
 
 {
-  "content": "A inteligência artificial é um campo da ciência da computação que busca criar sistemas capazes de realizar tarefas que normalmente requerem inteligência humana, como reconhecimento de voz, tomada de decisões e tradução entre idiomas."
+  "content": "A inteligência artificial é um campo da ciência da computação que busca criar sistemas capazes de realizar tarefas que normalmente requerem inteligência humana, como reconhecimento de voz, tomada de decisões e tradução entre idiomas.",
+  "domain": "rh"
 }
 
-### Ingerir documento vazio (deve retornar 400)
+### Ingerir documento técnico
 POST {{baseUrl}}/documents
 Content-Type: application/json
 
 {
-  "content": ""
+  "content": "A API de pagamentos aceita requisições POST no endpoint /v1/payments. O payload deve incluir amount, currency e customer_id. A autenticação é feita via Bearer token no header Authorization.",
+  "domain": "tecnico"
+}
+
+### Ingerir documento vazio (deve retornar 422)
+POST {{baseUrl}}/documents
+Content-Type: application/json
+
+{
+  "content": "",
+  "domain": "rh"
+}
+
+### Ingerir documento com espaços (deve retornar 400)
+POST {{baseUrl}}/documents
+Content-Type: application/json
+
+{
+  "content": "   ",
+  "domain": "rh"
+}
+
+### Ingerir documento com domínio inválido (deve retornar 422)
+POST {{baseUrl}}/documents
+Content-Type: application/json
+
+{
+  "content": "Texto qualquer",
+  "domain": "invalido"
 }
 
 ### ============================================
-### Consultas RAG
+### Consultas RAG (Multi-Agente)
 ### ============================================
 
-### Fazer pergunta
+### Pergunta RH (deve rotear para agente RH)
 POST {{baseUrl}}/ask
 Content-Type: application/json
 
 {
-  "question": "O que é inteligência artificial?"
+  "question": "Qual é a política de férias?"
 }
 
-### Pergunta vazia (deve retornar 400)
+### Pergunta técnica (deve rotear para agente técnico)
+POST {{baseUrl}}/ask
+Content-Type: application/json
+
+{
+  "question": "Como integrar a API de pagamentos?"
+}
+
+### Pergunta ambígua (deve buscar em ambas as coleções)
+POST {{baseUrl}}/ask
+Content-Type: application/json
+
+{
+  "question": "Quais são as regras da empresa?"
+}
+
+### Pergunta vazia (deve retornar 422)
 POST {{baseUrl}}/ask
 Content-Type: application/json
 
 {
   "question": ""
+}
+
+### Pergunta com espaços (deve retornar 400)
+POST {{baseUrl}}/ask
+Content-Type: application/json
+
+{
+  "question": "   "
 }

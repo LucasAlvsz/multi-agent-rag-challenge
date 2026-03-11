@@ -19,9 +19,12 @@ router = APIRouter(tags=["Ingestão"])
     ),
     responses={
         200: {"description": "Documento indexado com sucesso"},
-        400: {"description": "Conteúdo vazio", "model": ErrorResponse},
+        400: {
+            "description": "Conteúdo contém apenas espaços em branco",
+            "model": ErrorResponse,
+        },
         422: {
-            "description": "Payload inválido (campo ausente ou domínio inválido)"
+            "description": "Payload inválido (conteúdo vazio, campo ausente ou domínio inválido)"
         },
         503: {
             "description": "Provider LLM/Embeddings não disponível",

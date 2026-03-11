@@ -21,8 +21,13 @@ router = APIRouter(tags=["Consulta"])
     ),
     responses={
         200: {"description": "Resposta gerada com sucesso"},
-        400: {"description": "Pergunta vazia", "model": ErrorResponse},
-        422: {"description": "Payload inválido"},
+        400: {
+            "description": "Pergunta contém apenas espaços em branco",
+            "model": ErrorResponse,
+        },
+        422: {
+            "description": "Payload inválido (pergunta vazia ou campo ausente)"
+        },
         503: {
             "description": "Provider LLM/Embeddings não disponível",
             "model": ErrorResponse,

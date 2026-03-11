@@ -1,6 +1,8 @@
 services:
   api:
-    build: .
+    build:
+      context: .
+      target: production
     env_file:
       - .env
     ports:
@@ -11,6 +13,7 @@ services:
       - AWS_REGION=${AWS_REGION}
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
       - CHROMA_HOST=chroma
       - CHROMA_PORT=8000
     depends_on:
@@ -22,6 +25,20 @@ services:
       - "8001:8000"
     volumes:
       - chroma_data:/chroma/chroma
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+
+  test:
+    build:
+      context: .
+      target: test
+    profiles:
+      - test
 
 volumes:
   chroma_data:
