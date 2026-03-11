@@ -1,5 +1,7 @@
 """Factory para LLM e Embeddings via LangChain."""
 
+from functools import lru_cache
+
 from langchain_core.embeddings import Embeddings
 from langchain_core.language_models import BaseChatModel
 
@@ -27,16 +29,22 @@ def get_llm() -> BaseChatModel:
             region_name=settings.aws_region,
         )
 
-    from langchain_google_genai import ChatGoogleGenerativeAI
+    if provider == "gemini":
+        from langchain_google_genai import ChatGoogleGenerativeAI
 
-    return ChatGoogleGenerativeAI(
-        model=settings.gemini_llm_model,
-        google_api_key=settings.google_api_key,
+        return ChatGoogleGenerativeAI(
+            model=settings.gemini_llm_model,
+            google_api_key=settings.google_api_key,
+        )
+
+    raise ValueError(
+        f"Provider '{provider}' não suportado. Use: openai, bedrock ou gemini."
     )
 
 
+@lru_cache
 def get_embeddings() -> Embeddings:
-    """Retorna instância LangChain de Embeddings conforme LLM_PROVIDER."""
+    """Retorna instância LangChain de Embeddings conforme LLM_PROVIDER (cacheada como singleton)."""
     settings = get_settings()
     provider = settings.llm_provider
 
@@ -56,9 +64,14 @@ def get_embeddings() -> Embeddings:
             region_name=settings.aws_region,
         )
 
-    from langchain_google_genai import GoogleGenerativeAIEmbeddings
+    if provider == "gemini":
+        from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
-    return GoogleGenerativeAIEmbeddings(
-        model=settings.gemini_embed_model,
-        google_api_key=settings.google_api_key,
+        return GoogleGenerativeAIEmbeddings(
+            model=settings.gemini_embed_model,
+            google_api_key=settings.google_api_key,
+        )
+
+    raise ValueError(
+        f"Provider '{provider}' não suportado. Use: openai, bedrock ou gemini."
     )

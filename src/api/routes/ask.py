@@ -1,5 +1,7 @@
 """Rota para consulta RAG multi-agente."""
 
+import asyncio
+
 from fastapi import APIRouter, Depends, HTTPException
 
 from src.api.schemas.ask import AskRequest, AskResponse
@@ -34,11 +36,11 @@ router = APIRouter(tags=["Consulta"])
         },
     },
 )
-def post_ask(request: AskRequest, graph=Depends(get_graph)) -> AskResponse:
+async def post_ask(request: AskRequest, graph=Depends(get_graph)) -> AskResponse:
     if not request.question or not request.question.strip():
         raise HTTPException(
             status_code=400, detail="O campo 'question' não pode estar vazio"
         )
 
-    result = handle_ask(request.question, graph)
+    result = await asyncio.to_thread(handle_ask, request.question, graph)
     return AskResponse(**result)

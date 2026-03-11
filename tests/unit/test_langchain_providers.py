@@ -2,6 +2,8 @@
 
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 
 class TestGetLlm:
     """Testes para get_llm."""
@@ -19,16 +21,12 @@ class TestGetLlm:
         assert result is not None
 
     @patch("src.shared.model_providers.get_settings")
-    def test_gemini_fallback_for_unknown_provider(self, mock_settings):
-        mock_settings.return_value = MagicMock(
-            llm_provider="invalid",
-            gemini_llm_model="gemini-pro",
-            google_api_key="fake-key",
-        )
+    def test_unknown_provider_raises_value_error(self, mock_settings):
+        mock_settings.return_value = MagicMock(llm_provider="invalid")
         from src.shared.model_providers import get_llm
 
-        result = get_llm()
-        assert result is not None
+        with pytest.raises(ValueError, match="não suportado"):
+            get_llm()
 
 
 class TestGetEmbeddings:
@@ -48,17 +46,12 @@ class TestGetEmbeddings:
         assert isinstance(result, Embeddings)
 
     @patch("src.shared.model_providers.get_settings")
-    def test_gemini_fallback_for_unknown_provider(self, mock_settings):
-        mock_settings.return_value = MagicMock(
-            llm_provider="invalid",
-            gemini_embed_model="models/embedding-001",
-            google_api_key="fake-key",
-        )
-        from langchain_core.embeddings import Embeddings
+    def test_unknown_provider_raises_value_error(self, mock_settings):
+        mock_settings.return_value = MagicMock(llm_provider="invalid")
         from src.shared.model_providers import get_embeddings
 
-        result = get_embeddings()
-        assert isinstance(result, Embeddings)
+        with pytest.raises(ValueError, match="não suportado"):
+            get_embeddings()
 
 
 class TestGetChromaClient:

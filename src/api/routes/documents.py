@@ -1,5 +1,7 @@
 """Rota para ingestão de documentos."""
 
+import asyncio
+
 from fastapi import APIRouter, HTTPException
 
 from src.api.schemas.common import ErrorResponse
@@ -32,11 +34,11 @@ router = APIRouter(tags=["Ingestão"])
         },
     },
 )
-def post_documents(request: DocumentRequest) -> DocumentResponse:
+async def post_documents(request: DocumentRequest) -> DocumentResponse:
     if not request.content or not request.content.strip():
         raise HTTPException(
             status_code=400, detail="O campo 'content' não pode estar vazio"
         )
 
-    result = handle_ingest(request.content, request.domain)
+    result = await asyncio.to_thread(handle_ingest, request.content, request.domain)
     return DocumentResponse(**result)

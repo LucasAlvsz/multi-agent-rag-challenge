@@ -13,12 +13,18 @@ os.environ.setdefault("CHROMA_PORT", "8000")
 
 @pytest.fixture(autouse=True)
 def _clear_settings_cache():
-    """Limpa o cache do get_settings entre testes para evitar state leaking."""
+    """Limpa caches de singletons entre testes para evitar state leaking."""
     from src.core.dependencies import get_settings
+    from src.shared.model_providers import get_embeddings
+    from src.shared.vectorstore import get_chroma_client
 
     get_settings.cache_clear()
+    get_embeddings.cache_clear()
+    get_chroma_client.cache_clear()
     yield
     get_settings.cache_clear()
+    get_embeddings.cache_clear()
+    get_chroma_client.cache_clear()
 
 
 @pytest.fixture

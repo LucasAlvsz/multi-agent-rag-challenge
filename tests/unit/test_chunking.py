@@ -21,13 +21,13 @@ class TestChunkText:
         assert len(result) == 1
         assert result[0] == text
 
-    def test_text_exactly_chunk_size_produces_overlap_chunk(self):
-        """Texto com exatamente chunk_size chars gera chunk extra por causa do overlap."""
+    def test_text_exactly_chunk_size_returns_single_chunk(self):
+        """Texto com exatamente chunk_size chars cabe em um único chunk."""
         text = "a" * CHUNK_SIZE
         result = chunk_text(text)
 
-        assert len(result) >= 1
-        assert "".join(result).replace("a", "") == ""
+        assert len(result) == 1
+        assert result[0] == text
 
     def test_long_text_produces_multiple_chunks(self):
         text = "palavra " * 200

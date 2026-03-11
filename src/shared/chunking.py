@@ -1,12 +1,16 @@
-"""Divisão de texto em chunks com overlap."""
+"""Divisão de texto em chunks com overlap via LangChain."""
+
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 CHUNK_SIZE = 500
 CHUNK_OVERLAP = 50
 
 
-def chunk_text(text: str, chunk_size: int = CHUNK_SIZE, overlap: int = CHUNK_OVERLAP) -> list[str]:
+def chunk_text(
+    text: str, chunk_size: int = CHUNK_SIZE, overlap: int = CHUNK_OVERLAP
+) -> list[str]:
     """
-    Divide o texto em chunks com overlap.
+    Divide o texto em chunks com overlap usando RecursiveCharacterTextSplitter.
 
     Args:
         text: Texto a ser dividido.
@@ -19,24 +23,10 @@ def chunk_text(text: str, chunk_size: int = CHUNK_SIZE, overlap: int = CHUNK_OVE
     if not text or not text.strip():
         return []
 
-    text = text.strip()
-    chunks: list[str] = []
-    start = 0
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size,
+        chunk_overlap=overlap,
+        strip_whitespace=True,
+    )
 
-    while start < len(text):
-        end = start + chunk_size
-        chunk = text[start:end]
-
-        if end < len(text):
-            last_space = chunk.rfind(" ")
-            if last_space > chunk_size // 2:
-                end = start + last_space + 1
-                chunk = text[start:end]
-
-        chunk = chunk.strip()
-        if chunk:
-            chunks.append(chunk)
-
-        start = end - overlap if overlap < end - start else end
-
-    return chunks
+    return splitter.split_text(text.strip())
