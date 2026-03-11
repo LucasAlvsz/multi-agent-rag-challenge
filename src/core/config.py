@@ -1,5 +1,7 @@
 """Configuração centralizada da aplicação via Pydantic BaseSettings."""
 
+from typing import Literal
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -7,7 +9,7 @@ class Settings(BaseSettings):
     """Configurações carregadas de variáveis de ambiente e/ou arquivo .env."""
 
     # Provider
-    llm_provider: str = "openai"
+    llm_provider: Literal["openai", "bedrock", "gemini"] = "openai"
 
     # OpenAI
     openai_api_key: str = ""
