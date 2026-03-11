@@ -388,15 +388,28 @@ Acessível em http://localhost:3000 após `docker compose up -d`.
 
 ---
 
-## O que ficou de fora (possíveis melhorias)
+## Possíveis melhorias
 
-### Autenticação nos endpoints
 
-`POST /documents` e `POST /ask` são públicos. Adicionar autenticação (API key via header ou OAuth2) seria um middleware ou `Depends` na camada de rotas, sem impacto na lógica dos agentes.
+### Guardrails
 
-### Histórico de conversas
+Atualmente o sistema não valida a intenção da pergunta nem a qualidade da resposta gerada. Em produção, guardrails adicionariam duas camadas de proteção:
 
-Cada request é stateless — o grafo recebe apenas a pergunta atual. Suporte a multi-turn exigiria persistir o histórico (ex: Redis ou banco relacional) e injetar as mensagens anteriores no prompt de geração.
+- **Na entrada** — um nó `input_guard` antes do `classify` verificaria se a pergunta está dentro do escopo do sistema (evitando perguntas fora de contexto como "me conte uma piada") e se não há tentativas de prompt injection manipulando o comportamento do LLM.
+
+- **Na saída** — um nó `output_guard` antes do `END` verificaria se a resposta gerada está fundamentada no contexto recuperado do Chroma, reduzindo o risco de alucinações, e se não contém informações sensíveis que não deveriam ser expostas.
+
+Ambos os nós seriam adicionados ao grafo LangGraph sem alterar a lógica dos especialistas existentes — é uma extensão natural da arquitetura de grafos.
+
+### Relevance Score no RAG
+
+O Chroma retorna um campo `distances` em cada resultado de query — a distância vetorial entre a pergunta e cada chunk. Quanto menor a distância, mais relevante o chunk. Atualmente esse valor é ignorado e todos os chunks recuperados são passados ao LLM independentemente de quão irrelevantes sejam.
+
+Duas melhorias possíveis com esse dado:
+
+- **Threshold de relevância**: descartar chunks com distância acima de um valor configurável (ex: `0.8`). Se nenhum chunk passar no threshold, retornar "não encontrei informação relevante" sem nem chamar o LLM — evitando alucinações baseadas em contexto vagamente relacionado e eliminando uma chamada desnecessária.
+
+- **Score nas sources**: expor a distância (ou uma pontuação de relevância normalizada) no campo `sources` da resposta da API, permitindo que o consumidor saiba o quão confiável é cada trecho usado na geração da resposta.
 
 ### Domínios dinâmicos
 
