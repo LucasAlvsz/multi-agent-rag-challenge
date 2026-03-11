@@ -8,8 +8,9 @@ from langchain_core.language_models import BaseChatModel
 from src.core.dependencies import get_settings
 
 
+@lru_cache
 def get_llm() -> BaseChatModel:
-    """Retorna instância LangChain do LLM conforme LLM_PROVIDER."""
+    """Retorna instância LangChain do LLM conforme LLM_PROVIDER (cacheada como singleton)."""
     settings = get_settings()
     provider = settings.llm_provider
 
