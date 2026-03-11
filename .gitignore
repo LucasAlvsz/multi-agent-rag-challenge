@@ -10,3 +10,5 @@ venv/
 .eggs/
 dist/
 build/
+node_modules/
+.coverage
