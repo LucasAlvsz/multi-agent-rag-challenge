@@ -299,38 +299,17 @@ Os rótulos ajudam o LLM a entender a origem de cada trecho durante a geração 
 
 **Por que essa abordagem:** as buscas ao Chroma são chamadas HTTP locais com latência na ordem de milissegundos. Para dois especialistas, a diferença entre sequencial e paralelo é irrelevante em volume baixo/médio. O fan-out paralelo seria o design correto em produção com muitos domínios ou retrievers lentos — o padrão `Send` do LangGraph resolve esse cenário sem alterar a lógica de cada especialista, apenas adicionando nós de dispatch e merge.
 
-### 6. Validação em Duas Camadas
-
-A validação acontece em duas etapas: **Pydantic** (schema) e **handler** (lógica de negócio).
-
-- `domain` usa `Literal["rh", "tecnico"]` — domínios inválidos são rejeitados com HTTP 422 antes de qualquer lógica
-- `content` e `question` usam `min_length=1` — strings vazias (`""`) retornam 422
-- Strings apenas com espaços (`"   "`) passam pelo Pydantic mas são rejeitadas no handler com HTTP 400
-
-O Swagger documenta automaticamente os valores permitidos e os códigos de erro.
-
-### 7. Configuração Centralizada (Pydantic BaseSettings)
+### 6. Configuração Centralizada (Pydantic BaseSettings)
 
 Todas as variáveis de ambiente são centralizadas em `core/config.py` via `pydantic-settings`. Isso elimina `os.environ.get()` espalhado pelo código e fornece validação de tipos, valores default e carregamento automático de `.env`.
 
-### 8. Prompts em YAML
+### 7. Prompts em YAML
 
 Os prompts dos agentes (classificação e geração de resposta) são definidos em arquivos YAML em `agents/prompts/`. Um loader converte YAML para `ChatPromptTemplate` do LangChain. Isso permite editar prompts sem alterar código Python e facilita review por pessoas não-técnicas.
 
-### 9. Dependency Injection via FastAPI
+### 8. Dependency Injection via FastAPI
 
 O grafo LangGraph é compilado uma única vez no lifespan do FastAPI e armazenado em `app.state.graph`. As rotas recebem o grafo via `Depends(get_graph)`, eliminando o uso de variáveis globais e facilitando testes com mocks.
-
-### 10. Fallback do Generator para Contexto Vazio
-
-O nó `generate` verifica explicitamente se o contexto recuperado é vazio antes de chamar o LLM:
-
-```python
-if not state.get("context", "").strip():
-    return {"answer": "Não encontrei documentos relevantes para responder à sua pergunta."}
-```
-
-Isso evita uma chamada desnecessária ao LLM e retorna uma mensagem clara ao usuário quando nenhum chunk relevante é encontrado no Chroma.
 
 ---
 
