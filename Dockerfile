@@ -13,7 +13,7 @@ ENV LLM_PROVIDER=openai
 ENV OPENAI_API_KEY=sk-test-fake-key-for-ci
 ENV CHROMA_HOST=localhost
 ENV CHROMA_PORT=8000
-RUN python -m pytest tests/ -v --tb=short
+CMD ["python", "-m", "pytest", "tests/", "-v", "--tb=short"]
 
 FROM base AS production
 EXPOSE 8000
